@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incluir archivos HTML con AJAX</title>
+
+    <style>
+        *,
+    *::after,
+    *::before{
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        font-style: normal;
+    }
+    .header, .footer{
+        padding: 0.5rem;
+        background-color: antiquewhite;
+        color: black;
+    }
+    header, footer{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    /*Media quuery para cambiar la vista después de 1020px*/
+    @media screen and (min-width: 1024px){
+        header{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }        
+    }
+    body{
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+    }
+    
+    main{
+        /*Hace que el pie siempre esté en la parte de abajo, como el main crece en 1 las otras etiquetas crecen en 0 */
+        flex-grow: 1;
+    } 
+    /*.container{
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 990px;
+    } */
+    .logo img{
+        width: 3rem;
+        height: auto;
+    }
+    /*Para que las imágenes no se desborden y sean responsivas con un máximo de 100%*/
+    img{
+        max-width: 100%;
+        height: auto;
+    }
+    .menu ul{
+        display: flex; /*disposición flex para las los enlaces a las secciones*/
+        list-style-type: none; /*elimina las viñetas*/
+        font-size: 115%;
+    }
+    .menu li{
+        padding: 0.5rem;
+    }
+    .menu a{
+        color: chocolate;
+        padding: 0 1vw; /*Para que los enlace se separen 1vw*/
+        transition: all 0.3s ease-in-out;
+        text-decoration: none;
+    }
+    .menu a:hover{
+        opacity: .75;
+    }
+    </style>
+    <script src="./js/include.js"></script>
+</head>
+<body>
+    
+    <div data-include = "./assets/header.html"></div>
+    
+    <main class="container">    
+    </main>
+    
+    <div data-include = "./assets/footer.html"></div>
+    <script>
+        const d = document, 
+        $main = d.querySelector("main");
+
+        const html = (options) => {
+            let {url, success, error} = options;
+            const xhr = new XMLHttpRequest();
+
+            xhr.addEventListener("readystatechange", evento => {
+                if(xhr.readyState!==4)return;
+                
+                if(xhr.status >= 200 && xhr.status < 300){
+                    let html = xhr.responseText;
+                    success(html);
+
+                }else{
+                    let message = xhr.statusText || "Ocurrió un error";
+                    error(`Error ${xhr.status}: ${message}`);
+                }                        
+            });
+
+            xhr.open("GET", url);
+            xhr.setRequestHeader("content-type", "application/html; charset=utf-8");
+            xhr.send();
+        }
+
+        d.addEventListener("DOMContentLoaded", evento => {
+            html({
+                url: "assets/home.html", 
+                success: (html) => $main.innerHTML = html, 
+                error: (error) => $main.innerHTML = `<h1>${error}</h1>`
+            })
+        });
+
+        d.addEventListener("click", evento =>{
+
+            if(evento.target.matches(".menu a")){
+                evento.preventDefault();
+                html({
+                    url: evento.target.href, 
+                    success: (html) => $main.innerHTML = html, 
+                    error: (error) => $main.innerHTML = `<h1>${error}</h1>`                    
+                })
+            }
+
+        });
+    </script>
+</body>
+</html>

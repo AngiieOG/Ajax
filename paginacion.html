@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémons</title>
+    <style>
+        .grid-fluid{
+            display: inline-grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            text-align: center;
+            place-items: center; 
+        }
+        /*
+        .loader{
+            display: block;
+            margin: auto;
+        }*/
+    </style>
+</head>
+<body>
+    <h1>Pokémons</h1>
+    <nav class="links"></nav>
+    <main class="grid-fluid">
+     
+    </main>
+    
+    <script>
+        const d = document,
+        $main = d.querySelector("main"),
+        $links = d.querySelector(".links");
+        
+        let pokeApi = "https://pokeapi.co/api/v2/pokemon/";
+
+        async function cargarPokemons(url){
+            try {
+                $main.innerHTML = `<img class="loader" src="./assets/hearts.svg" alt="Cargando...">`;
+                let res = await fetch(url), 
+                json = await res.json(),
+                $template = "",
+                $prevLink,
+                $nextLink;
+
+                if (!res.ok) throw {status: res.status, statusText: res.statusText};
+
+               
+                for(let i=0; i < json.results.length; i++){
+        
+                    try {                
+                                        
+                        let respuesta = await fetch(json.results[i].url);
+                        let pokemon = await respuesta.json();
+                        console.log(respuesta, pokemon);
+                        
+                        if (!respuesta.ok) throw {status: respuesta.status, statusText: respuesta.statusText};
+
+                        $template += `
+                            <figure>
+                                <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+                                <figcaption>${pokemon.name}</figcaption>
+                            <figure/>
+                        `;
+                    } catch (error) {
+                        console.log("estoy en el catch");
+                        let mensaje = error.statusText || "Ocurrió un error";
+                        $template += `
+                            <figure>
+                                <figcaption>Error ${error.status}: ${mensaje}</figcaption>
+                            <figure/>
+                        `;
+                    }
+                }
+                $main.innerHTML = $template;
+                
+            } catch (error) {
+                console.log("estoy en el catch",error);
+                let mensaje = error.statusText || "Ocurrió un error";
+                $main.innerHTML = `<p><b>Error: ${error.status}: ${mensaje}`;
+            }
+        }
+
+        d.addEventListener("DOMContentLoaded", element => cargarPokemons(pokeApi));
+    </script>
+</body>
+</html>
